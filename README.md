@@ -1,2 +1,1 @@
-Test JWT token:
-eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJFR0EiLCJpYXQiOjE1MjE2NDcwMDEsImV4cCI6MTU1MzE4MzAwMSwiYXVkIjoiIiwic3ViIjoiIiwiZGF0YXNldHMiOiJFR0FEMDEifQ.kH9wQbQyGG-wIdSdgFqDWraGR7jGjdurqRabcqe8yEw
+Quality Control for LocalEGA
