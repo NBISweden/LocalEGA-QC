@@ -14,10 +14,10 @@ import se.nbis.lega.qc.listenerts.QCMessageListener;
 @Configuration
 public class MQConfiguration {
 
-    @Value("${lega.qc.queue-name}")
+    @Value("${lega.qc.mq.queue}")
     private String queueName;
 
-    @Value("${lega.qc.topic-exchange-name}")
+    @Value("${lega.qc.mq.topic-exchange}")
     private String topicExchangeName;
 
     @Bean
