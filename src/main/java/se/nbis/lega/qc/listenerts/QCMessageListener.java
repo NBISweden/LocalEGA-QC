@@ -6,6 +6,7 @@ import org.springframework.amqp.core.Message;
 import org.springframework.amqp.core.MessageListener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import se.nbis.lega.qc.pojo.QCMessage;
 import se.nbis.lega.qc.processors.Processor;
 
 import java.util.Collection;
@@ -18,9 +19,10 @@ public class QCMessageListener implements MessageListener {
     private Collection<Processor> processors;
 
     @Override
-    public void onMessage(Message message) {
+    public void onMessage(org.springframework.amqp.core.Message message) {
+        QCMessage qcMessage = gson.fromJson(new String(message.getBody()), QCMessage.class);
         for (Processor processor : processors) {
-            processor.accept(new String(message.getBody()));
+            processor.accept(qcMessage);
         }
     }
 
