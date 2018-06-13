@@ -19,17 +19,17 @@ public class S3Configuration {
         return new MinioClient(minioEndpoint, minioAccessKey, minioSecretKey);
     }
 
-    @Value("${localega.s3.endpoint}")
+    @Value("${lega.s3.endpoint}")
     public void setMinioEndpoint(String minioEndpoint) {
         this.minioEndpoint = minioEndpoint;
     }
 
-    @Value("${localega.s3.access-key}")
+    @Value("${lega.s3.access-key}")
     public void setMinioAccessKey(String minioAccessKey) {
         this.minioAccessKey = minioAccessKey;
     }
 
-    @Value("${localega.s3.secret-key}")
+    @Value("${lega.s3.secret-key}")
     public void setMinioSecretKey(String minioSecretKey) {
         this.minioSecretKey = minioSecretKey;
     }
