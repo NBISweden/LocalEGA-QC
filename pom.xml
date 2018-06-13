@@ -46,6 +46,11 @@
             <artifactId>postgresql</artifactId>
         </dependency>
         <dependency>
+            <groupId>io.minio</groupId>
+            <artifactId>minio</artifactId>
+            <version>4.0.0</version>
+        </dependency>
+        <dependency>
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
             <version>2.5</version>
@@ -54,6 +59,11 @@
             <groupId>org.bouncycastle</groupId>
             <artifactId>bcpkix-jdk15on</artifactId>
             <version>1.58</version>
+        </dependency>
+        <dependency>
+            <groupId>com.github.uio-bmi</groupId>
+            <artifactId>crypt4gh</artifactId>
+            <version>891671be28</version>
         </dependency>
         <dependency>
             <groupId>com.github.samtools</groupId>
@@ -83,6 +93,13 @@
         </dependency>
     </dependencies>
 
+    <repositories>
+        <repository>
+            <id>jitpack.io</id>
+            <url>https://jitpack.io</url>
+        </repository>
+    </repositories>
+
     <build>
         <plugins>
             <plugin>
@@ -94,10 +111,10 @@
                 <artifactId>docker-maven-plugin</artifactId>
                 <version>1.0.0</version>
                 <configuration>
-                    <imageName>nbisweden/ega-proxy</imageName>
+                    <imageName>nbisweden/ega-qc</imageName>
                     <baseImage>openjdk:8-jre-alpine</baseImage>
                     <entryPoint>["java", "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005", "-jar", "/${project.build.finalName}.jar"]</entryPoint>
-                    <!-- copy the service's jar file from target into the root directory of the image -->
+                    <!-- copy the service's jar fileDescriptor from target into the root directory of the image -->
                     <resources>
                         <resource>
                             <targetPath>/</targetPath>

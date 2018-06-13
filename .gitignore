@@ -4,7 +4,7 @@ appengine-generated/
 #Java
 target/
 
-# Log file
+# Log fileDescriptor
 *.log
 
 # Idea files

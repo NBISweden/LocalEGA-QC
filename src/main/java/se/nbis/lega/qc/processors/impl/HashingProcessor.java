@@ -7,7 +7,7 @@ import se.nbis.lega.qc.processors.AbstractProcessor;
 
 @Slf4j
 @Component
-public class HTSProcessor extends AbstractProcessor {
+public class HashingProcessor extends AbstractProcessor {
 
     @Override
     public Boolean apply(Crypt4GHInputStream crypt4GHInputStream) {

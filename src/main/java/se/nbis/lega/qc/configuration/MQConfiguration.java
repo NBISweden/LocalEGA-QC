@@ -1,38 +1,21 @@
 package se.nbis.lega.qc.configuration;
 
-import org.springframework.amqp.core.Binding;
-import org.springframework.amqp.core.BindingBuilder;
 import org.springframework.amqp.core.Queue;
-import org.springframework.amqp.core.TopicExchange;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import se.nbis.lega.qc.listenerts.QCMessageListener;
+import se.nbis.lega.qc.listeners.QCMessageListener;
 
 @Configuration
 public class MQConfiguration {
 
-    @Value("${lega.qc.mq.queue}")
     private String queueName;
-
-    @Value("${lega.qc.mq.topic-exchange}")
-    private String topicExchangeName;
 
     @Bean
     public Queue queue() {
         return new Queue(queueName, true);
-    }
-
-    @Bean
-    public TopicExchange exchange() {
-        return new TopicExchange(topicExchangeName);
-    }
-
-    @Bean
-    public Binding binding(Queue queue, TopicExchange exchange) {
-        return BindingBuilder.bind(queue).to(exchange).with("lega.qc.#");
     }
 
     @Bean
@@ -42,6 +25,11 @@ public class MQConfiguration {
         container.setQueueNames(queueName);
         container.setMessageListener(messageListener);
         return container;
+    }
+
+    @Value("${lega.qc.mq.queue}")
+    public void setQueueName(String queueName) {
+        this.queueName = queueName;
     }
 
 }

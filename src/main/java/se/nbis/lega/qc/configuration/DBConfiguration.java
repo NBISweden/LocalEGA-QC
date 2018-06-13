@@ -10,7 +10,6 @@ import javax.annotation.PostConstruct;
 @Configuration
 public class DBConfiguration {
 
-    @Value("${lega.qc.db.schema}")
     private String schema;
 
     private JdbcTemplate jdbcTemplate;
@@ -23,6 +22,11 @@ public class DBConfiguration {
     @Autowired
     public void setJdbcTemplate(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
+    }
+
+    @Value("${lega.qc.db.schema}")
+    public void setSchema(String schema) {
+        this.schema = schema;
     }
 
 }

@@ -22,6 +22,11 @@ public abstract class AbstractProcessor implements Processor {
         jdbcTemplate.execute(String.format("CREATE TABLE IF NOT EXISTS \"%s\".\"%s\"()", schema, getName()));
     }
 
+    @Override
+    public String getName() {
+        return getClass().getSimpleName();
+    }
+
     @Autowired
     public void setJdbcTemplate(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
