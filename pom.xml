@@ -61,9 +61,9 @@
             <version>1.58</version>
         </dependency>
         <dependency>
-            <groupId>com.github.uio-bmi</groupId>
+            <groupId>no.uio.ifi</groupId>
             <artifactId>crypt4gh</artifactId>
-            <version>891671be28</version>
+            <version>1.0.0</version>
         </dependency>
         <dependency>
             <groupId>com.github.samtools</groupId>
@@ -96,7 +96,7 @@
     <repositories>
         <repository>
             <id>jitpack.io</id>
-            <url>https://jitpack.io</url>
+            <url>https://github.com/uio-bmi/crypt4gh/raw/maven</url>
         </repository>
     </repositories>
 
