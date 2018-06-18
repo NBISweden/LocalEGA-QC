@@ -20,6 +20,7 @@ import se.nbis.lega.qc.pojo.FileStatus;
 import se.nbis.lega.qc.processors.Processor;
 
 import java.net.URL;
+import java.net.URLConnection;
 import java.nio.charset.Charset;
 import java.util.Collection;
 
@@ -46,7 +47,10 @@ public class QCMessageListener implements MessageListener {
         try {
             FileDescriptor fileDescriptor = gson.fromJson(new String(message.getBody()), FileDescriptor.class);
             byte[] headerBytes = Hex.decode(fileDescriptor.getHeader());
-            String key = IOUtils.toString(new URL(keysEndpoint + fileDescriptor.getKeyId()).openStream(), Charset.defaultCharset());
+            URL url = new URL(keysEndpoint + fileDescriptor.getKeyId());
+            URLConnection urlConnection = url.openConnection();
+            urlConnection.setRequestProperty("Content-Type", "plain/text");
+            String key = IOUtils.toString(urlConnection.getInputStream(), Charset.defaultCharset());
             Header header = headerFactory.getHeader(headerBytes, key, passphrase);
             String id = fileDescriptor.getId();
             String fileURL = s3Client.presignedGetObject(bucket, id);
@@ -63,17 +67,17 @@ public class QCMessageListener implements MessageListener {
         }
     }
 
-    @Value("lega.keys.endpoint")
+    @Value("${lega.keys.endpoint}")
     public void setKeysEndpoint(String keysEndpoint) {
         this.keysEndpoint = keysEndpoint;
     }
 
-    @Value("lega.keys.passphrase")
+    @Value("${lega.keys.passphrase}")
     public void setPassphrase(String passphrase) {
         this.passphrase = passphrase;
     }
 
-    @Value("lega.s3.bucket")
+    @Value("${lega.s3.bucket}")
     public void setBucket(String bucket) {
         this.bucket = bucket;
     }
