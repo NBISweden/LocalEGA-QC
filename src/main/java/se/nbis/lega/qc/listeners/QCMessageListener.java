@@ -8,6 +8,8 @@ import no.ifi.uio.crypt4gh.factory.HeaderFactory;
 import no.ifi.uio.crypt4gh.pojo.Header;
 import no.ifi.uio.crypt4gh.stream.Crypt4GHInputStream;
 import org.apache.commons.io.IOUtils;
+import org.apache.http.HttpHeaders;
+import org.apache.http.entity.ContentType;
 import org.bouncycastle.util.encoders.Hex;
 import org.springframework.amqp.core.Message;
 import org.springframework.amqp.core.MessageListener;
@@ -49,7 +51,7 @@ public class QCMessageListener implements MessageListener {
             byte[] headerBytes = Hex.decode(fileDescriptor.getHeader());
             URL url = new URL(keysEndpoint + fileDescriptor.getKeyId());
             URLConnection urlConnection = url.openConnection();
-            urlConnection.setRequestProperty("Content-Type", "plain/text");
+            urlConnection.setRequestProperty(HttpHeaders.CONTENT_TYPE, ContentType.TEXT_PLAIN.toString());
             String key = IOUtils.toString(urlConnection.getInputStream(), Charset.defaultCharset());
             Header header = headerFactory.getHeader(headerBytes, key, passphrase);
             String id = fileDescriptor.getId();
