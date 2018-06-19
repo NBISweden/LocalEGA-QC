@@ -49,7 +49,7 @@ public class QCMessageListener implements MessageListener {
         try {
             FileDescriptor fileDescriptor = gson.fromJson(new String(message.getBody()), FileDescriptor.class);
             byte[] headerBytes = Hex.decode(fileDescriptor.getHeader());
-            URL url = new URL(keysEndpoint + fileDescriptor.getKeyId());
+            URL url = new URL(String.format(keysEndpoint, fileDescriptor.getKeyId()));
             URLConnection urlConnection = url.openConnection();
             urlConnection.setRequestProperty(HttpHeaders.CONTENT_TYPE, ContentType.TEXT_PLAIN.toString());
             String key = IOUtils.toString(urlConnection.getInputStream(), Charset.defaultCharset());
@@ -63,7 +63,7 @@ public class QCMessageListener implements MessageListener {
                     break;
                 }
             }
-            jdbcTemplate.update("UPDATE files SET status = '?' WHERE id = ?", fileStatus, Long.parseLong(id));
+            jdbcTemplate.update("UPDATE files SET status = ?::status WHERE id = ?", fileStatus.getStatus(), Long.parseLong(id));
         } catch (Exception e) {
             log.error(e.getMessage(), e);
         }
