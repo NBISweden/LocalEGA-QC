@@ -20,6 +20,8 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 import se.nbis.lega.qc.pojo.FileDescriptor;
 import se.nbis.lega.qc.pojo.FileStatus;
+import se.nbis.lega.qc.pojo.OriginalMessage;
+import se.nbis.lega.qc.pojo.Status;
 import se.nbis.lega.qc.processors.Processor;
 
 import java.net.URL;
@@ -52,14 +54,16 @@ public class QCMessageListener implements MessageListener {
     public void onMessage(Message message) {
         try {
             FileDescriptor fileDescriptor = gson.fromJson(new String(message.getBody()), FileDescriptor.class);
-            byte[] headerBytes = Hex.decode(fileDescriptor.getHeader());
-            URL url = new URL(String.format(keysEndpoint, fileDescriptor.getKeyId()));
+            String headerString = jdbcTemplate.queryForObject("SELECT header FROM files WHERE id = ?", String.class, fileDescriptor.getId());
+            byte[] headerBytes = Hex.decode(headerString);
+            String keyId = headerFactory.getKeyId(headerBytes);
+            URL url = new URL(String.format(keysEndpoint, keyId));
             URLConnection urlConnection = url.openConnection();
             urlConnection.setRequestProperty(HttpHeaders.CONTENT_TYPE, ContentType.TEXT_PLAIN.toString());
             String key = IOUtils.toString(urlConnection.getInputStream(), Charset.defaultCharset());
             Header header = headerFactory.getHeader(headerBytes, key, passphrase);
-            String id = fileDescriptor.getId();
-            String fileURL = s3Client.presignedGetObject(bucket, id);
+            int id = fileDescriptor.getId();
+            String fileURL = s3Client.presignedGetObject(bucket, String.valueOf(id));
             FileStatus fileStatus = COMPLETED;
             for (Processor processor : processors) {
                 if (!processor.apply(new Crypt4GHInputStream(new SeekableHTTPStream(new URL(fileURL)), false, header))) {
@@ -67,7 +71,10 @@ public class QCMessageListener implements MessageListener {
                     break;
                 }
             }
-            jdbcTemplate.update("UPDATE files SET status = ?::status WHERE id = ?", fileStatus.getStatus(), Long.parseLong(id));
+            OriginalMessage originalMessage = fileDescriptor.getOriginalMessage();
+            originalMessage.setStatus(new Status(fileStatus.getStatus().toUpperCase(), fileDescriptor.getStableId()));
+            rabbitTemplate.convertAndSend(exchange, routingKey, gson.toJson(originalMessage));
+            jdbcTemplate.update("UPDATE files SET status = ?::status WHERE id = ?", fileStatus.getStatus(), id);
         } catch (Exception e) {
             log.error(e.getMessage(), e);
         }

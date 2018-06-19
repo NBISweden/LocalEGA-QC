@@ -18,16 +18,10 @@ public class FileDescriptor {
     private final String filePath;
 
     @SerializedName("file_id")
-    private final String id;
+    private final int id;
 
     @SerializedName("stable_id")
     private final String stableId;
-
-    @SerializedName("key_id")
-    private final String keyId;
-
-    @SerializedName("header")
-    private final String header;
 
     @SerializedName("encrypted_integrity")
     private final EncryptedIntegrity encryptedIntegrity;

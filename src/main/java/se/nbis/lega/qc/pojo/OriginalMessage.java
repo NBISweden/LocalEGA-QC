@@ -2,6 +2,7 @@ package se.nbis.lega.qc.pojo;
 
 import com.google.gson.annotations.SerializedName;
 import lombok.Data;
+import lombok.Setter;
 import lombok.ToString;
 
 @ToString
@@ -19,5 +20,9 @@ public class OriginalMessage {
 
     @SerializedName("encrypted_integrity")
     private final EncryptedIntegrity encryptedIntegrity;
+
+    @Setter
+    @SerializedName("status")
+    private Status status;
 
 }
