@@ -13,6 +13,7 @@ import org.apache.http.entity.ContentType;
 import org.bouncycastle.util.encoders.Hex;
 import org.springframework.amqp.core.Message;
 import org.springframework.amqp.core.MessageListener;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -36,11 +37,14 @@ public class QCMessageListener implements MessageListener {
     private String keysEndpoint;
     private String passphrase;
     private String bucket;
+    private String exchange;
+    private String routingKey;
 
     private Gson gson;
     private HeaderFactory headerFactory;
     private MinioClient s3Client;
     private JdbcTemplate jdbcTemplate;
+    private RabbitTemplate rabbitTemplate;
 
     private Collection<Processor> processors;
 
@@ -58,7 +62,7 @@ public class QCMessageListener implements MessageListener {
             String fileURL = s3Client.presignedGetObject(bucket, id);
             FileStatus fileStatus = COMPLETED;
             for (Processor processor : processors) {
-                if (!processor.apply(new Crypt4GHInputStream(new SeekableHTTPStream(new URL(fileURL)), header))) {
+                if (!processor.apply(new Crypt4GHInputStream(new SeekableHTTPStream(new URL(fileURL)), false, header))) {
                     fileStatus = ERROR;
                     break;
                 }
@@ -84,6 +88,16 @@ public class QCMessageListener implements MessageListener {
         this.bucket = bucket;
     }
 
+    @Value("${lega.qc.mq.exchange}")
+    public void setExchange(String exchange) {
+        this.exchange = exchange;
+    }
+
+    @Value("${lega.qc.mq.routing-key}")
+    public void setRoutingKey(String routingKey) {
+        this.routingKey = routingKey;
+    }
+
     @Autowired
     public void setGson(Gson gson) {
         this.gson = gson;
@@ -102,6 +116,11 @@ public class QCMessageListener implements MessageListener {
     @Autowired
     public void setJdbcTemplate(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
+    }
+
+    @Autowired
+    public void setRabbitTemplate(RabbitTemplate rabbitTemplate) {
+        this.rabbitTemplate = rabbitTemplate;
     }
 
     @Autowired

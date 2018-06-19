@@ -15,9 +15,11 @@ public class VerificationProcessor extends AbstractProcessor {
     @Override
     public Boolean apply(Crypt4GHInputStream crypt4GHInputStream) {
         try {
-            byte[] digest = DigestUtils.sha256(crypt4GHInputStream);
-            log.info(Arrays.toString(digest));
-            return true;
+            byte[] calculatedDigest = DigestUtils.sha256(crypt4GHInputStream);
+            log.debug("Calculated digest: " + Arrays.toString(calculatedDigest));
+            byte[] embeddedDigest = crypt4GHInputStream.getDigest();
+            log.debug("Embedded digest: " + Arrays.toString(embeddedDigest));
+            return Arrays.equals(calculatedDigest, embeddedDigest);
         } catch (Exception e) {
             log.error(e.getMessage(), e);
             return false;

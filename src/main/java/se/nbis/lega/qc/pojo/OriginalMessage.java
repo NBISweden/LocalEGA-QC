@@ -6,33 +6,18 @@ import lombok.ToString;
 
 @ToString
 @Data
-public class FileDescriptor {
+public class OriginalMessage {
 
     @SerializedName("user")
     private final String userName;
 
-    @SerializedName("user_id")
-    private final String userId;
-
     @SerializedName("filepath")
     private final String filePath;
-
-    @SerializedName("file_id")
-    private final String id;
 
     @SerializedName("stable_id")
     private final String stableId;
 
-    @SerializedName("key_id")
-    private final String keyId;
-
-    @SerializedName("header")
-    private final String header;
-
     @SerializedName("encrypted_integrity")
     private final EncryptedIntegrity encryptedIntegrity;
-
-    @SerializedName("org_msg")
-    private final OriginalMessage originalMessage;
 
 }
