@@ -19,6 +19,7 @@ public abstract class AbstractProcessor implements Processor {
 
     @PostConstruct
     protected void init() {
+        jdbcTemplate.update(String.format("CREATE SCHEMA IF NOT EXISTS \"%s\"", schema));
         jdbcTemplate.execute(String.format("CREATE TABLE IF NOT EXISTS \"%s\".\"%s\"()", schema, getName()));
     }
 
