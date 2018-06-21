@@ -82,6 +82,7 @@ public class QCMessageListener implements MessageListener {
         } catch (JsonSyntaxException e) {
             log.error(e.getMessage(), e);
         } catch (Exception e) {
+            log.error(e.getMessage(), e);
             FileDescriptor fileDescriptor = gson.fromJson(new String(message.getBody()), FileDescriptor.class);
             makeRecords(fileDescriptor, FileStatus.ERROR);
         }
