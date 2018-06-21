@@ -8,7 +8,7 @@ public enum FileStatus {
     ARCHIVED("Archived"),
     ERROR("Error");
 
-    private String status;
+    private final String status;
 
     FileStatus(String status) {
         this.status = status;

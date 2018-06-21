@@ -2,8 +2,11 @@ package se.nbis.lega.qc.listeners;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
+import htsjdk.samtools.seekablestream.SeekableFileStream;
 import htsjdk.samtools.seekablestream.SeekableHTTPStream;
+import htsjdk.samtools.seekablestream.SeekableStream;
 import io.minio.MinioClient;
+import io.minio.errors.*;
 import lombok.extern.slf4j.Slf4j;
 import no.ifi.uio.crypt4gh.factory.HeaderFactory;
 import no.ifi.uio.crypt4gh.pojo.Header;
@@ -19,15 +22,19 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
-import se.nbis.lega.qc.pojo.FileDescriptor;
-import se.nbis.lega.qc.pojo.FileStatus;
-import se.nbis.lega.qc.pojo.OriginalMessage;
-import se.nbis.lega.qc.pojo.Status;
+import org.xmlpull.v1.XmlPullParserException;
+import se.nbis.lega.qc.pojo.*;
 import se.nbis.lega.qc.processors.Processor;
 
+import javax.crypto.NoSuchPaddingException;
+import java.io.File;
+import java.io.IOException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.nio.charset.Charset;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
 import java.util.Collection;
 
 import static se.nbis.lega.qc.pojo.FileStatus.COMPLETED;
@@ -37,6 +44,7 @@ import static se.nbis.lega.qc.pojo.FileStatus.ERROR;
 @Component
 public class QCMessageListener implements MessageListener {
 
+    private String storageDriver;
     private String keysEndpoint;
     private String passphrase;
     private String bucket;
@@ -63,10 +71,9 @@ public class QCMessageListener implements MessageListener {
             urlConnection.setRequestProperty(HttpHeaders.CONTENT_TYPE, ContentType.TEXT_PLAIN.toString());
             String key = IOUtils.toString(urlConnection.getInputStream(), Charset.defaultCharset());
             Header header = headerFactory.getHeader(headerBytes, key, passphrase);
-            String fileURL = s3Client.presignedGetObject(bucket, String.valueOf(fileDescriptor.getId()));
             FileStatus fileStatus = COMPLETED;
             for (Processor processor : processors) {
-                if (!processor.apply(new Crypt4GHInputStream(new SeekableHTTPStream(new URL(fileURL)), false, header))) {
+                if (!processor.apply(getCrypt4GHStream(header, fileDescriptor))) {
                     fileStatus = ERROR;
                     break;
                 }
@@ -80,11 +87,31 @@ public class QCMessageListener implements MessageListener {
         }
     }
 
+    private Crypt4GHInputStream getCrypt4GHStream(Header header, FileDescriptor fileDescriptor) throws IOException, NoSuchPaddingException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, InvalidKeyException, InsufficientDataException, NoResponseException, XmlPullParserException, InternalException, ErrorResponseException, InvalidExpiresRangeException, InvalidBucketNameException {
+        StorageDriver driver = StorageDriver.getValue(storageDriver);
+        SeekableStream seekableStream;
+        switch (driver) {
+            case FILESYSTEM:
+                seekableStream = new SeekableFileStream(new File(fileDescriptor.getFilePath()));
+                break;
+            default:
+                String fileURL = s3Client.presignedGetObject(bucket, String.valueOf(fileDescriptor.getId()));
+                seekableStream = new SeekableHTTPStream(new URL(fileURL));
+                break;
+        }
+        return new Crypt4GHInputStream(seekableStream, false, header);
+    }
+
     private void makeRecords(FileDescriptor fileDescriptor, FileStatus fileStatus) {
         OriginalMessage originalMessage = fileDescriptor.getOriginalMessage();
         originalMessage.setStatus(new Status(fileStatus.getStatus().toUpperCase(), fileDescriptor.getStableId()));
         rabbitTemplate.convertAndSend(exchange, routingKey, gson.toJson(originalMessage));
         jdbcTemplate.update("UPDATE files SET status = ?::status WHERE id = ?", fileStatus.getStatus(), fileDescriptor.getId());
+    }
+
+    @Value("${lega.storage.driver}")
+    public void setStorageDriver(String storageDriver) {
+        this.storageDriver = storageDriver;
     }
 
     @Value("${lega.keys.endpoint}")
